@@ -694,8 +694,8 @@ class ApiGenerator extends Generator
 					$table2ToTable1 = $targetClass.'_'.$schemaName;
 					if(!isset($this->junctionTables[$table1ToTable2]) || !isset($this->junctionTables[$table2ToTable1])){
 						$this->junctionTables[$table1ToTable2] = [
-							'source' => $schemaName,
-							'target' => $targetClass,
+							'source' => Inflector::camel2id(StringHelper::basename(Inflector::pluralize($schemaName))),
+							'target' => Inflector::camel2id(StringHelper::basename(Inflector::pluralize($targetClass))), 
 						];
 					}
                     $type = $type[0];
