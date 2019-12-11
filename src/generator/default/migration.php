@@ -17,6 +17,7 @@ class <?= $className ?> extends \yii\db\Migration
             '<?= $attribute['dbName'] ?>' => '<?= $attribute['dbType'] ?>',
 <?php endforeach; ?>
 		]);
+<?php
 		if(isset($attributes['uuid'])): ?>
 				$this->addPrimaryKey('uuid_pk','<?=$tableName?>',['uuid']);
 		<?php endif; ?>
