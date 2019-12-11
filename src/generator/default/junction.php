@@ -8,14 +8,15 @@ echo "\nnamespace $namespace;\n";
 $foreignSource = strtolower($reference['source']);
 $foreignTarget = strtolower($reference['target']);
 
-$junctionTableName =  strtolower($foreignSource).'_'.strtolower($foreignTarget);
+$junctionTableName =  $tableName ; 
+//strtolower($foreignSource).'_'.strtolower($foreignTarget);
 
 
 $foreignColumn1 = strtolower($foreignSource.'_uuid');
 $foreignName1 = $junctionTableName.'-'.$foreignColumn1;
 $foreignTable1 = [
 	'name' => 'fk-'.$foreignName1,
-	'table' => strtolower($junctionTableName),
+	'table' => strtolower($tableName),
 	'tableColumn' => $foreignColumn1,
 	'tableforeign' => $foreignSource,
 	'foreignColumn' => 'uuid',
@@ -25,7 +26,7 @@ $foreignColumn2 = strtolower($foreignTarget.'_uuid');
 $foreignName2 = $junctionTableName.'-'.$foreignColumn2;
 $foreignTable2 = [
 	'name' => 'fk-'. $foreignName2,
-	'table' => strtolower($junctionTableName),
+	'table' => strtolower($tableName),
 	'tableColumn' => $foreignColumn2,
 	'tableforeign' => $foreignTarget,
 	'foreignColumn' => 'uuid',
@@ -69,13 +70,13 @@ class <?= $className ?> extends \yii\db\Migration
 		<?php endforeach; ?> 
 		);
 
-		$this->addIndex(
+		$this->createIndex(
 		<?php foreach($indexTable1 as $key=>$value) : ?>
 		'<?=$value?>' <?= ($value == end($indexTable1)) ? '':",\n" ?>
 		<?php endforeach; ?> 
 		);
 
-		$this->addIndex(
+		$this->createIndex(
 		<?php foreach($indexTable2 as $key=>$value) : ?>
 		'<?=$value?>' <?= ($value == end($indexTable2)) ? '':",\n" ?>
 		<?php endforeach; ?> 

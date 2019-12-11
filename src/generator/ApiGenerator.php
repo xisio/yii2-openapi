@@ -689,13 +689,14 @@ class ApiGenerator extends Generator
 						];
 
 					);*/
-
-					$table1ToTable2 = $schemaName.'_'.$targetClass;
-					$table2ToTable1 = $targetClass.'_'.$schemaName;
+					$tableName1 = Inflector::camel2id(StringHelper::basename(Inflector::pluralize($schemaName)));
+					$tableName2 = Inflector::camel2id(StringHelper::basename(Inflector::pluralize($targetClass)));
+					$table1ToTable2 = $tableName1.'_'.$tableName2;
+					$table2ToTable1 = $tableName2.'_'.$tableName1;
 					if(!isset($this->junctionTables[$table1ToTable2]) || !isset($this->junctionTables[$table2ToTable1])){
 						$this->junctionTables[$table1ToTable2] = [
-							'source' => Inflector::camel2id(StringHelper::basename(Inflector::pluralize($schemaName))),
-							'target' => Inflector::camel2id(StringHelper::basename(Inflector::pluralize($targetClass))), 
+							'source' => strtolower($tableName1),
+							'target' => strtolower($tableName2), 
 						];
 					}
                     $type = $type[0];
