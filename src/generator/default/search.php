@@ -82,7 +82,7 @@ class <?= $modelClass ?>Search extends <?= $modelClass ?>
      */
     public function search($params)
     {
-	   $query = $this-><?=$modelClass?>::find();
+	   $query = <?=$modelClass?>::find();
         // add conditions that should always apply here
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
