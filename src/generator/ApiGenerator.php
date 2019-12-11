@@ -633,7 +633,7 @@ class ApiGenerator extends Generator
                         $relations[$name] = [
                             'class' => $type,
                             'method' => 'hasOne',
-                            'link' => ['id' => $dbName], // TODO pk may not be 'id'
+                            'link' => ['uuid' => $dbName], // TODO pk may not be 'id'
 						];
 
 						$relation = [
@@ -654,7 +654,7 @@ class ApiGenerator extends Generator
                     $relations[$name] = [
                         'class' => $type[1],
                         'method' => 'hasMany',
-                        'link' => [Inflector::camel2id($schemaName, '_') . '_id' => 'id'], // TODO pk may not be 'id'
+                        'link' => [Inflector::camel2id($schemaName, '_') . '_uuid' => 'uuid'], // TODO pk may not be 'id'
 					];
 
 
@@ -666,7 +666,7 @@ class ApiGenerator extends Generator
 						$targetClass => [
 							'class' => $schemaName,
 							'method' => 'hasMany',
-							'link' => [Inflector::camel2id($targetClass, '_') . '_id' => 'id'], // TODO pk may not be 'id'
+							'link' => [Inflector::camel2id($targetClass, '_') . '_uuid' => 'uuid'], // TODO pk may not be 'id'
 						]
                     ];
 					$this->models[$schemaName]->addRelation($relation);
@@ -1046,8 +1046,31 @@ class ApiGenerator extends Generator
                     ])
                 );
             }
-        }
+		}
 
+		if(!empty($this->junctionTables)){
+			foreach($this->junctionTables as $tableName=>$referenceTables){
+                // migration files get invalidated directly after generating
+                // if they contain a timestamp
+                // use fixed time here instead
+                if ($migrationNamespace) {
+                    $m = date('ymd000000');
+                    $className = "M{$m}$tableName";
+                } else {
+                    $m = date('ymd_000000');
+                    $className = "m{$m}_$tableName";
+                }
+                $files[] = new CodeFile(
+                    Yii::getAlias("$migrationPath/$className.php"),
+                    $this->render('junction.php', [
+						'tableName' => $tableName,
+						'className' => $className,
+						'reference' => $referenceTables,
+                    ])
+				);
+			}
+
+		}
         return $files;
     }
 

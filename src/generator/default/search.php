@@ -97,8 +97,7 @@ class <?= $modelClass ?>Search extends <?= $modelClass ?>
         // grid filtering conditions
 		$query->andFilterWhere([
 <?php
-	foreach ($integerAttributes as $attribute) :
-			$name = $attribute;
+	foreach ($integerAttributes as $name) :
 			?> 
 			'<?=$name?>' => $this-><?= $name?>,
 	<?php
