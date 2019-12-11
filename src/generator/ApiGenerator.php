@@ -353,7 +353,7 @@ class ApiGenerator extends Generator
             $actionParams = [];
             $idParam = null;
             foreach ($parts as $p => $part) {
-                if (preg_match('/\{(.*)\}/', $part, $m)) {
+				if (preg_match('/\{(.*)\}/', $part, $m)) {
                     $params = true;
                     $parts[$p] = '<' . $m[1] . '>';
                     if (isset($pathItem->parameters[$m[1]])) {
@@ -361,7 +361,7 @@ class ApiGenerator extends Generator
                     } else {
                         $actionParams[$m[1]] = null;
                     }
-                    if ($idParam === null && preg_match('/\bid\b/i', Inflector::camel2id($m[1]))) {
+                    if ($idParam === null && preg_match('/\b(id|uuid)\b/i', Inflector::camel2id($m[1]))) {
                         $idParam = $m[1];
                     }
                     // TODO add regex to param based on openAPI type
@@ -567,7 +567,8 @@ class ApiGenerator extends Generator
     {
         $urls = $this->generateUrls();
 
-        $c = [];
+		$c = [];
+
         foreach ($urls as $url) {
             $parts = explode('/', $url['route'], 2);
             $c[$parts[0]][] = [
@@ -577,7 +578,7 @@ class ApiGenerator extends Generator
                 'modelClass' => $url['modelClass'],
                 'responseWrapper' => $url['responseWrapper'],
             ];
-        }
+		}
         return $c;
     }
 
@@ -879,7 +880,8 @@ class ApiGenerator extends Generator
                     'urls' => $urls,
                 ])
             );
-        }
+		}
+
 
         if ($this->generateControllers) {
             $controllers = $this->generateControllers();
