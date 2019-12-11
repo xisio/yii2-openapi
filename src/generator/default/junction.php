@@ -8,32 +8,36 @@ echo "\nnamespace $namespace;\n";
 $foreignSource = strtolower($reference['source']);
 $foreignTarget = strtolower($reference['target']);
 
-$foreignTable1Name = strtolower($foreignSource).'_'.strtolower($foreignTarget);
+$junctionTableName =  strtolower($foreignSource).'_'.strtolower($foreignTarget);
 
+
+$foreignColumn1 = strtolower($foreignSource.'_uuid');
+$foreignName1 = $junctionTableName.'-'.$foreignColumn1;
 $foreignTable1 = [
-	'name' => 'fk-'.$foreignTable1Name,
-	'table' => strtolower($tableName),
-	'tableColumn' => strtolower($foreignSource.'_uuid'),
+	'name' => 'fk-'.$foreignName1,
+	'table' => strtolower($junctionTableName),
+	'tableColumn' => $foreignColumn1,
 	'tableforeign' => $foreignSource,
 	'foreignColumn' => 'uuid',
 ];
+$foreignColumn2 = strtolower($foreignTarget.'_uuid');
 
-$foreignTable2Name = strtolower($foreignTarget).'_' .strtolower($foreignSource);
+$foreignName2 = $junctionTableName.'-'.$foreignColumn2;
 $foreignTable2 = [
-	'name' => 'fk-'. $foreignTable2Name,
-	'table' => strtolower($tableName),
-	'tableColumn' => strtolower($foreignTarget.'_uuid'),
+	'name' => 'fk-'. $foreignName2,
+	'table' => strtolower($junctionTableName),
+	'tableColumn' => $foreignColumn2,
 	'tableforeign' => $foreignTarget,
 	'foreignColumn' => 'uuid',
 ];
 
 $indexTable1 = [
-	'name' => 'id-' . $foreignTable1Name ,
+	'name' => 'id-' . $foreignName1 ,
 	'table' => strtolower($tableName),
 	'column' => $foreignTable1['tableColumn']
 ];
 $indexTable2 = [
-	'name' => 'id-' . $foreignTable2Name ,
+	'name' => 'id-' . $foreignName2 ,
 	'table' => strtolower($tableName),
 	'column' => $foreignTable2['tableColumn']
 ];
@@ -52,11 +56,30 @@ class <?= $className ?> extends \yii\db\Migration
 		);
 
 		
-		$this->addForeignKey('<?= join(',',$foreignTable1)?>');
-		$this->addForeignKey('<?= join(',',$foreignTable2)?>');
+		$this->addForeignKey( 
+		<?php foreach($foreignTable1 as $key=>$value) : ?>
+			'<?=$value?>'  <?= ($value == end($foreignTable1)) ? '':",\n" ?>
+		<?php endforeach; ?> 
+		);
 
-		$this->addIndex('<?= join(',',$indexTable1)?>');
-		$this->addIndex('<?= join(',',$indexTable2)?>');
+		$this->addForeignKey(
+
+		<?php foreach($foreignTable2 as $key=>$value) : ?>
+		'<?=$value?>' <?= ($value == end($foreignTable2)) ? '':",\n" ?>
+		<?php endforeach; ?> 
+		);
+
+		$this->addIndex(
+		<?php foreach($indexTable1 as $key=>$value) : ?>
+		'<?=$value?>' <?= ($value == end($indexTable1)) ? '':",\n" ?>
+		<?php endforeach; ?> 
+		);
+
+		$this->addIndex(
+		<?php foreach($indexTable2 as $key=>$value) : ?>
+		'<?=$value?>' <?= ($value == end($indexTable2)) ? '':",\n" ?>
+		<?php endforeach; ?> 
+		);
     }
 
     public function down()
