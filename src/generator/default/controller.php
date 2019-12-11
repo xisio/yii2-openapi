@@ -196,11 +196,11 @@ endforeach;
             foreach ($params as $key => $value) {
                 /*Wenn die Werte nicht skalar sind, dann hier Ende ...*/
                 if(!is_scalar($key) or !is_scalar($value)) {
-                    throw new BadRequestHttpException('Bad Request');
+                    throw new \yii\web\BadRequestHttpException('Bad Request');
                 }
                 /* Prüfe ob der Key $key in $modelAttr existiert */
                 if (!in_array(strtolower($key), $this->reservedParams)
-                    && ArrayHelper::keyExists($key, $modelAttr, false)) {
+                    && \yii\helpers\ArrayHelper::keyExists($key, $modelAttr, false)) {
                     $search[$key] = $value;
                 }
             }
@@ -214,7 +214,7 @@ endforeach;
         if(isset($params['limit'])){
                 $this->pageSize = $params['limit'];
         }
-        $pagination = new Pagination(['pageSize' => $this->pageSize]);
+        $pagination = new \yii\data\Pagination(['pageSize' => $this->pageSize]);
         $dataprovider = $searchModel->search($searchByAttr);
         $dataprovider->setPagination($pagination);
         return $dataprovider;
