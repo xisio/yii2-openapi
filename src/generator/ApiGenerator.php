@@ -27,6 +27,10 @@ use yii\helpers\Html;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 
+
+
+use cebe\yii2openapi\helper\ModelClass;
+
 /**
  *
  *
@@ -605,6 +609,18 @@ class ApiGenerator extends Generator
                 continue;
             }
 
+			$model =[
+                'name' => $schemaName,
+                'tableName' => '{{%' . Inflector::camel2id(StringHelper::basename(Inflector::pluralize($schemaName)), '_') . '}}',
+				'description' => $schema->description,
+			];
+			if(!isset($this->models[$schemaName])){
+				$this->models[$schemaName] = new ModelClass(
+					$model
+				);
+			}else {
+				$this->models[$schemaName]->init($model); 
+			}
             foreach ($schema->properties as $name => $property) {
                 if ($property instanceof Reference) {
                     $ref = $property->getJsonReference()->getJsonPointer()->getPointer();
