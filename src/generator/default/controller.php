@@ -52,9 +52,15 @@ namespace <?= $namespace ?>;
 
 class <?= $className ?> extends \yii\rest\Controller
 {
+	private $limit = 20;
+	private $modelClass ='<?=$modelNamespace?>\<?=$modelClass?>';
+	private $modelSearch ='<?=$modelNamespace?>\<?=$modelClass?>Search';
+
     public function actions()
-    {
-        return [
+	{
+		$actions =parent::actions();
+
+        $newActions= [
 <?php
 
 foreach ($actions as $action):
@@ -71,7 +77,13 @@ endforeach;
             'options' => [
                 'class' => \yii\rest\OptionsAction::class,
             ],
-        ];
+		];
+		/* Apply Search */
+
+        if(!empty($this->modelSearch)) {
+                $actions['index']['prepareDataProvider'] = [$this, 'indexDataProvider'];
+        }
+		return array_merge($actions,$newActions);
     }
 <?php
     $serializerConfigs = [];
@@ -166,4 +178,43 @@ endforeach;
         throw new NotFoundHttpException("Object not found: $id");
     }
 <?php endforeach; ?>
+
+
+    public function indexDataProvider() {
+        $params = \Yii::$app->request->queryParams;
+
+        $model = new $this->modelClass;
+        /* sollte man lieber durch safeAttributes und scenario ersetzen.*/
+        $modelAttr = $model->attributes;
+
+        /* hält die Filter für uns vor*/
+        $search = [];
+
+        if (!empty($params)) {
+            foreach ($params as $key => $value) {
+                /*Wenn die Werte nicht skalar sind, dann hier Ende ...*/
+                if(!is_scalar($key) or !is_scalar($value)) {
+                    throw new BadRequestHttpException('Bad Request');
+                }
+                /* Prüfe ob der Key $key in $modelAttr existiert */
+                if (!in_array(strtolower($key), $this->reservedParams)
+                    && ArrayHelper::keyExists($key, $modelAttr, false)) {
+                    $search[$key] = $value;
+                }
+            }
+        }
+        /* $modelSearchnamen aus der Klasse Oben rausfiltern */
+        $modelSearchname = \end(explode('\\',$this->modelSearch));
+        $searchByAttr[$modelSearchname] = $search;
+        $searchModel = new $this->modelSearch();
+
+        $pagination = null;
+        if(isset($params['limit'])){
+                $this->pageSize = $params['limit'];
+        }
+        $pagination = new Pagination(['pageSize' => $this->pageSize]);
+        $dataprovider = $searchModel->search($searchByAttr);
+        $dataprovider->setPagination($pagination);
+        return $dataprovider;
+    }
 }

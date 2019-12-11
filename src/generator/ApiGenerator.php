@@ -93,7 +93,9 @@ class ApiGenerator extends Generator
      * @var string namespace to create migrations in.
      * Defaults to `null` which means that migrations are generated without namespace.
      */
-    public $migrationNamespace;
+	public $migrationNamespace;
+
+	public $generateModelSearch = true;
 
 
 
@@ -888,9 +890,11 @@ class ApiGenerator extends Generator
                 $files[] = new CodeFile(
                     Yii::getAlias($controllerPath . "/$className.php"),
                     $this->render('controller.php', [
-                        'className' => $className,
+						'className' => $className,
+						'modelClass' => $controller,
                         'namespace' => $controllerNamespace,
-                        'actions' => $actions,
+						'actions' => $actions,
+						'modelNamespace' => $this->modelNamespace
                     ])
                 );
             }
@@ -918,6 +922,19 @@ class ApiGenerator extends Generator
                 $files[] = new CodeFile(
                     Yii::getAlias("$modelPath/{$className}Faker.php"),
                     $this->render('faker.php', [
+                        'className' => "{$className}Faker",
+                        'modelClass' => $className,
+                        'namespace' => $this->modelNamespace,
+                        'attributes' => $model['attributes'],
+//                        'relations' => $model['relations'],
+                    ])
+                );
+                if (!$this->generateModelSearch) {
+                    continue;
+                }
+                $files[] = new CodeFile(
+                    Yii::getAlias("$modelPath/{$className}Search.php"),
+                    $this->render('search.php', [
                         'className' => "{$className}Faker",
                         'modelClass' => $className,
                         'namespace' => $this->modelNamespace,
