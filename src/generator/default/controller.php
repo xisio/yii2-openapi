@@ -53,8 +53,8 @@ namespace <?= $namespace ?>;
 class <?= $className ?> extends \yii\rest\Controller
 {
 	private $limit = 20;
-	private $modelClass ='<?=$modelNamespace?>\<?=$modelClass?>';
-	private $modelSearch ='<?=$modelNamespace?>\<?=$modelClass?>Search';
+	private $modelClass ='<?=$modelNamespace?>\<?=ucfirst($modelClass)?>';
+	private $modelSearch ='<?=$modelNamespace?>\<?=ucfirst($modelClass)?>Search';
 
     public function actions()
 	{
