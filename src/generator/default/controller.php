@@ -81,7 +81,7 @@ endforeach;
 		/* Apply Search */
 
         if(!empty($this->modelSearch)) {
-                $actions['index']['prepareDataProvider'] = [$this, 'indexDataProvider'];
+                $newAction['index']['prepareDataProvider'] = [$this, 'indexDataProvider'];
         }
 		return array_merge($actions,$newActions);
     }
