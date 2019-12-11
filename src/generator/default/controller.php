@@ -55,6 +55,8 @@ class <?= $className ?> extends \yii\rest\Controller
 	private $limit = 20;
 	private $modelClass ='<?=$modelNamespace?>\<?=ucfirst($modelClass)?>';
 	private $modelSearch ='<?=$modelNamespace?>\<?=ucfirst($modelClass)?>Search';
+    private $reservedParams = ['sort','q'];
+
 
     public function actions()
 	{
