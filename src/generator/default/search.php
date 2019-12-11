@@ -1,3 +1,4 @@
+<?php echo "<?php"; ?> 
 
 namespace <?= $namespace ?>;
 
@@ -107,7 +108,10 @@ class <?= $modelClass ?>Search extends <?= $modelClass ?>
 		<?php
 			if(count($stringAttributes) > 0) : 
 		?>
-		$query->andFilterWhere(['like','<?=$name?>',$this-><?=$name?> ]);
+		$query
+			<?php foreach ($stringAttributes as $name) :  ?>
+				->andFilterWhere(['like','<?=$name?>',$this-><?=$name?> ]);
+			<?php endforeach; ?> 
 		<?php
 			endif;
 		?>	

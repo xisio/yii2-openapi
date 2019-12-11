@@ -97,7 +97,11 @@ class ApiGenerator extends Generator
 
 	public $generateModelSearch = true;
 
-
+	public $models;
+	/*
+	 * @var array List of junctionTables
+	**/
+	public $junctionTables = [];
 
 
     /**
@@ -614,7 +618,12 @@ class ApiGenerator extends Generator
                             'class' => $type,
                             'method' => 'hasOne',
                             'link' => ['id' => $dbName], // TODO pk may not be 'id'
-                        ];
+						];
+
+						$relation = [
+							$name => $relations[$name] 
+						];
+						$this->models[$schemaName]->addRelation($relation);
                     } else {
                         $type = $this->getSchemaType($resolvedProperty);
                     }
@@ -630,7 +639,49 @@ class ApiGenerator extends Generator
                         'class' => $type[1],
                         'method' => 'hasMany',
                         'link' => [Inflector::camel2id($schemaName, '_') . '_id' => 'id'], // TODO pk may not be 'id'
+					];
+
+
+					$relation = [
+						$name => $relations[$name]
+					];
+
+					$reverse_relation = [
+						$targetClass => [
+							'class' => $schemaName,
+							'method' => 'hasMany',
+							'link' => [Inflector::camel2id($targetClass, '_') . '_id' => 'id'], // TODO pk may not be 'id'
+						]
                     ];
+					$this->models[$schemaName]->addRelation($relation);
+					if(!isset ($this->model[$targetClass])) {
+						$this->models[$targetClass] = new ModelClass([]);
+					}
+
+					$this->models[$targetClass]->addRelation($reverse_relation);
+					/*
+					$this->models[$targetClass]->addProperty(
+						$attributes[$name] = [
+							'name' => $schemaName,
+							'type' => $type,
+							'dbType' => $dbType,
+							'dbName' => $dbName,
+							'required' => false,
+							'readOnly' => $resolvedProperty->readOnly ?? false,
+							'description' => $resolvedProperty->description,
+							'faker' => $this->guessModelFaker($name, $type, $resolvedProperty),
+						];
+
+					);*/
+
+					$table1ToTable2 = $schemaName.'_'.$targetClass;
+					$table2ToTable1 = $targetClass.'_'.$schemaName;
+					if(!isset($this->junctionTables[$table1ToTable2]) || !isset($this->junctionTables[$table2ToTable1])){
+						$this->junctionTables[$table1ToTable2] = [
+							'source' => $schemaName,
+							'target' => $targetClass,
+						];
+					}
                     $type = $type[0];
                 }
 
