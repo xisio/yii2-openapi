@@ -110,8 +110,8 @@ class <?= $modelClass ?>Search extends <?= $modelClass ?>
 		?>
 		$query
 			<?php foreach ($stringAttributes as $name) :  ?>
-				->andFilterWhere(['like','<?=$name?>',$this-><?=$name?> ]);
-			<?php endforeach; ?> 
+				->andFilterWhere(['like','<?=$name?>',$this-><?=$name?> ])
+			<?php endforeach; ?> ;
 		<?php
 			endif;
 		?>	
