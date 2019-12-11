@@ -68,8 +68,13 @@ class <?= $className ?> extends \yii\db\ActiveRecord
 ?>
         ];
     }
+<?php
+	$extraFields = [];
+?>
+<?php foreach ($relations as $relationName => $relation):
+		$extraFields[] = strtolower($relationName);
 
-<?php foreach ($relations as $relationName => $relation): ?>
+?>
     public function get<?= ucfirst($relationName) ?>()
     {
         return $this-><?= $relation['method'] ?>(<?= $relation['class'] ?>::class, <?php
@@ -79,7 +84,18 @@ class <?= $className ?> extends \yii\db\ActiveRecord
                     preg_replace('~\s+~', '', \yii\helpers\VarDumper::export($relation['link']))
             )
         ?>);
-    }
-
+	}
 <?php endforeach; ?>
+
+<?php if(count($extraFields)) :  ?> 
+	public function extraFields(){
+		return [
+			<?php foreach($extraFields as $field) : ?>
+				'<?=$field?>',
+			<?php endforeach; ?>
+		];
+
+
+}	
+<?php endif; ?>
 }
