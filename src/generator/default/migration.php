@@ -16,7 +16,11 @@ class <?= $className ?> extends \yii\db\Migration
 <?php foreach ($attributes as $attribute): ?>
             '<?= $attribute['dbName'] ?>' => '<?= $attribute['dbType'] ?>',
 <?php endforeach; ?>
-        ]);
+		]);
+		if(isset($attributes['uuid'])): ?>
+				$this->addPrimaryKey('uuid_pk','<?=$tableName?>',['uuid']);
+		<?php endif; ?>
+
 
         // TODO generate foreign keys
     }
