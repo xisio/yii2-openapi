@@ -645,7 +645,7 @@ class ApiGenerator extends Generator
 					$relation = [
 						$name => $relations[$name]
 					];
-
+					$targetClass = $type[1];
 					$reverse_relation = [
 						$targetClass => [
 							'class' => $schemaName,
