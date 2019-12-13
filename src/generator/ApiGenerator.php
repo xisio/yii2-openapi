@@ -649,7 +649,11 @@ class ApiGenerator extends Generator
                     $resolvedProperty = $property;
                     $type = $this->getSchemaType($property);
                     $dbName = $name;
-                    $dbType = $this->getDbType($name, $property);
+					$dbType = $this->getDbType($name, $property);
+					if($name == 'id' ) {
+						continue;
+
+					}
                 }
                 // relation
                 if (is_array($type)) {
