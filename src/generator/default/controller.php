@@ -49,6 +49,7 @@ $findModel = [];
 
 
 namespace <?= $namespace ?>;
+use yii\data\ActiveDataProvider;
 
 class <?= $className ?> extends \yii\rest\Controller
 {
@@ -57,6 +58,7 @@ class <?= $className ?> extends \yii\rest\Controller
 	private $modelSearch ='<?=$modelNamespace?>\<?=ucfirst($modelClass)?>Search';
 	private $reservedParams = ['sort','q'];
 	private $pageSize = 20;
+	private $offset = 0;
 
 
     public function actions()
@@ -212,12 +214,21 @@ endforeach;
         $searchModel = new $this->modelSearch();
 
         $pagination = null;
+        //$pagination = new \yii\data\Pagination(['pageSize' => $this->pageSize]);
+		$query = $searchModel->search($searchByAttr);
+		$dataprovider = new ActiveDataProvider(
+			[
+				'query' => $query
+			]
+		);
+        //$dataprovider->setPagination($pagination);
+        $dataprovider->setPagination(false);
         if(isset($params['limit'])){
-                $this->pageSize = $params['limit'];
+                $query->limit($params['limit']);
         }
-        $pagination = new \yii\data\Pagination(['pageSize' => $this->pageSize]);
-        $dataprovider = $searchModel->search($searchByAttr);
-        $dataprovider->setPagination($pagination);
+        if(isset($params['offset'])){
+                $query->offset($params['offset']);
+        }
         return $dataprovider;
     }
 }

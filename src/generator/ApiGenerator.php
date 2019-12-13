@@ -107,6 +107,8 @@ class ApiGenerator extends Generator
 	**/
 	public $junctionTables = [];
 
+	public $inputMigrations = [];
+
 
     /**
      * @return string name of the code generator

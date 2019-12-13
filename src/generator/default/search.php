@@ -86,7 +86,7 @@ class <?= $modelClass ?>Search extends <?= $modelClass ?>
         // add conditions that should always apply here
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-        ]);
+		]);
 
         $this->load($params);
         if (!$this->validate()) {
@@ -113,7 +113,8 @@ class <?= $modelClass ?>Search extends <?= $modelClass ?>
 			<?php endforeach; ?> ;
 		<?php
 			endif;
-		?>	
-        return $dataProvider;
+?>	
+        return $query;
+        //return $dataProvider;
     }
 }
