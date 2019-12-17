@@ -3,6 +3,8 @@
 
 namespace <?= $namespace ?>;
 
+use Ramsey\Uuid\Uuid;
+
 /**
  * <?= str_replace("\n", "\n * ", trim($description)) ?>
 
@@ -18,6 +20,16 @@ class <?= $className ?> extends \yii\db\ActiveRecord
     {
         return <?= var_export($tableName) ?>;
     }
+
+   public function beforeSave($insert) {
+        if ($this->isNewRecord) {
+	    //if(isset($this->uuid)){
+		    $this->uuid= Uuid::uuid4()->toString();
+	//	}
+        } 
+        return parent::beforeSave($insert);
+    }
+ 
 
     public function rules()
     {

@@ -34,12 +34,17 @@ class <?= $modelClass ?>Search extends <?= $modelClass ?>
 			}
 			switch($attribute['type']){
 				case 'integer' :
+				case 'boolean' : 
+				case 'bool' : 
 					$integerAttributes[$name] = $name;
 					break;
 				case 'string' :
 					$stringAttributes[$name] = $name;
 					break;
-				default:break;
+				    default:
+				    case 'array':
+					$safeAttributes[$attribute['name']] = $attribute['name'];
+					break;
 
 			}
 		}
@@ -103,6 +108,10 @@ class <?= $modelClass ?>Search extends <?= $modelClass ?>
 	<?php
 	endforeach;
 	?>
+<?php
+	    foreach($safeAttributes as $name) : ?>
+			'<?=$name?>' => $this-><?= $name?>,
+	  <?php endforeach  ?>
         ]);
 		<?php
 			if(count($stringAttributes) > 0) : 

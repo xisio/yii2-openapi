@@ -627,8 +627,9 @@ class ApiGenerator extends Generator
                 if ($property instanceof Reference) {
                     $ref = $property->getJsonReference()->getJsonPointer()->getPointer();
                     $resolvedProperty = $property->resolve();
-                    $dbName = "{$name}_id";
-                    $dbType = 'integer'; // for a foreign key
+                    $dbName = "{$name}_uuid";
+		    $name = "{$name}_uuid";
+                    $dbType = 'string(36)'; // for a foreign key
                     if (strpos($ref, '/components/schemas/') === 0) {
                         // relation
                         $type = substr($ref, 20);
