@@ -707,6 +707,7 @@ class ApiGenerator extends Generator
 						];
 					}
                     $type = $type[0];
+                    $dbName = "{$name}_uuid";
                 }
 
                 $attributes[$name] = [
