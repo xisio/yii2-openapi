@@ -50,6 +50,7 @@ $findModel = [];
 
 namespace <?= $namespace ?>;
 use yii\data\ActiveDataProvider;
+use Yii;
 
 class <?= $className ?> extends \yii\rest\Controller
 {

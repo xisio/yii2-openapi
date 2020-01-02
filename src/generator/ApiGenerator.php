@@ -580,6 +580,8 @@ class ApiGenerator extends Generator
 		$c = [];
 
         foreach ($urls as $url) {
+		
+	    $url['modelClass'] = Inflector::pluralize($url['modelClass']);
             $parts = explode('/', $url['route'], 2);
             $c[$parts[0]][] = [
                 'id' => $parts[1],
@@ -907,6 +909,17 @@ class ApiGenerator extends Generator
                 if (isset($schema->maxLength)) {
                     return 'string(' . ((int) $schema->maxLength) . ')';
                 }
+            if(isset($schema->format)){
+                    switch($schema->format){
+                        case 'date':
+                            return 'date';
+                        break;
+                        case 'date-time':
+                            return 'datetime';
+                        break;
+                    }
+            }
+
                 return 'text';
             case 'integer':
             case 'boolean':
@@ -969,8 +982,8 @@ class ApiGenerator extends Generator
                     Yii::getAlias($controllerPath . "/$className.php"),
                     $this->render('controller.php', [
 						'className' => $className,
-						'modelClass' => $controller,
-                        'namespace' => $controllerNamespace,
+						'modelClass' => Inflector::pluralize($controller),
+						'namespace' => $controllerNamespace,
 						'actions' => $actions,
 						'modelNamespace' => $this->modelNamespace
                     ])
@@ -1029,6 +1042,11 @@ class ApiGenerator extends Generator
             }
             $migrationPath = Yii::getAlias($this->migrationPath);
             $migrationNamespace = $this->migrationNamespace;
+		uasort($models, function ($firstModel, $secondModel) {
+		    $firstModel = count($firstModel['relations']);
+		    $secondModel = count($secondModel['relations']);
+		    return ($firstModel == $secondModel) ? 0 : (($firstModel < $secondModel) ? -1 : 1);
+		});
             foreach ($models as $modelName => $model) {
                 // migration files get invalidated directly after generating
                 // if they contain a timestamp

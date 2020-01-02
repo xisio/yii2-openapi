@@ -4,6 +4,8 @@
 namespace <?= $namespace ?>;
 
 use Ramsey\Uuid\Uuid;
+use Yii;
+use yii\db\Expression;
 
 /**
  * <?= str_replace("\n", "\n * ", trim($description)) ?>
@@ -26,7 +28,17 @@ class <?= $className ?> extends \yii\db\ActiveRecord
 	    //if(isset($this->uuid)){
 		    $this->uuid= Uuid::uuid4()->toString();
 	//	}
+	    if(empty($this->crdate)){
+		$this->crdate = date('c');
+	    }
+	    if(empty($this->hidden)){
+		$this->hidden = 0;
+	    }
+	    if(empty($this->deleted)){
+		$this->deleted = 0;
+	    }
         } 
+	$this->tstamp = date('c');
         return parent::beforeSave($insert);
     }
  
@@ -110,4 +122,22 @@ class <?= $className ?> extends \yii\db\ActiveRecord
 
 }	
 <?php endif; ?>
+
+	public static function find() {
+		$timestamp = date('c');
+		$null = new Expression('NULL');
+		$query =  parent::find()->where(['hidden' => 0,'deleted' => 0])
+		->andWhere(['or',
+			['>=','starttime',$timestamp],
+			['is','starttime',$null]
+			]
+		)
+		->andWhere(['or',
+			['<','endtime',$timestamp],
+			['is','endtime',$null]
+			]
+		);
+		return $query;
+	}
+
 }
