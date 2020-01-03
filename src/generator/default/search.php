@@ -24,6 +24,7 @@ class <?= $modelClass ?>Search extends <?= $modelClass ?>
     $requiredAttributes = [];
     $integerAttributes = [];
     $stringAttributes = [];
+    $compareEqualAttributes = [];
 		foreach($attributes as $key=>$attribute){
 			$name = $attribute['name'];
 			if ($attribute['readOnly']) {
@@ -39,11 +40,16 @@ class <?= $modelClass ?>Search extends <?= $modelClass ?>
 					$integerAttributes[$name] = $name;
 					break;
 				case 'string' :
-					$stringAttributes[$name] = $name;
+					if(preg_match('/uuid/',$name)){
+						$compareEqualAttributes[$name] = $name;
+					}else {
+						$stringAttributes[$name] = $name;
+					}
 					break;
 				    default:
 				    case 'array':
-					$safeAttributes[$attribute['name']] = $attribute['name'];
+						$safeAttributes[$attribute['name']] = $attribute['name'];
+
 					break;
 
 			}
@@ -55,6 +61,9 @@ class <?= $modelClass ?>Search extends <?= $modelClass ?>
         echo "            [['" . implode("', '", $requiredAttributes) . "'], 'required'],\n";
     }
     if (!empty($stringAttributes)) {
+        echo "            [['" . implode("', '", $stringAttributes) . "'], 'string'],\n";
+    }
+    if (!empty($compareEqualAttributes)) {
         echo "            [['" . implode("', '", $stringAttributes) . "'], 'string'],\n";
     }
     if (!empty($integerAttributes)) {
@@ -101,17 +110,18 @@ class <?= $modelClass ?>Search extends <?= $modelClass ?>
         }
         // grid filtering conditions
 		$query->andFilterWhere([
-<?php
-	foreach ($integerAttributes as $name) :
-			?> 
+<?php foreach ($integerAttributes as $name) : ?> 
 			'<?=$name?>' => $this-><?= $name?>,
-	<?php
-	endforeach;
-	?>
-<?php
-	    foreach($safeAttributes as $name) : ?>
+<?php endforeach; ?>
+
+<?php foreach($safeAttributes as $name) : ?>
 			'<?=$name?>' => $this-><?= $name?>,
-	  <?php endforeach  ?>
+<?php endforeach;  ?>
+
+
+<?php foreach($compareEqualAttributes as $name) : ?>
+			'<?=$name?>' => $this-><?= $name?>,
+<?php endforeach  ?>
         ]);
 		<?php
 			if(count($stringAttributes) > 0) : 
