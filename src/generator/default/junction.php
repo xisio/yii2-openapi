@@ -12,7 +12,7 @@ $junctionTableName =  $tableName ;
 //strtolower($foreignSource).'_'.strtolower($foreignTarget);
 
 
-$foreignColumn1 = strtolower($foreignSource.'_uuid');
+$foreignColumn1 = strtolower($foreignSource);
 $foreignName1 = $junctionTableName.'-'.$foreignColumn1;
 $foreignTable1 = [
 	'name' => 'fk-'.$foreignName1,
@@ -21,7 +21,7 @@ $foreignTable1 = [
 	'tableforeign' => $foreignSource,
 	'foreignColumn' => 'uuid',
 ];
-$foreignColumn2 = strtolower($foreignTarget.'_uuid');
+$foreignColumn2 = strtolower($foreignTarget);
 
 $foreignName2 = $junctionTableName.'-'.$foreignColumn2;
 $foreignTable2 = [
@@ -33,7 +33,7 @@ $foreignTable2 = [
 ];
 
 $indexTable1 = [
-	'name' => 'id-' . $foreignName1 ,
+	'name' => 'id-' .$foreignName1,
 	'table' => strtolower($tableName),
 	'column' => $foreignTable1['tableColumn']
 ];
@@ -50,8 +50,10 @@ class <?= $className ?> extends \yii\db\Migration
     {
 		$this->createTable('<?= strtolower($tableName) ?>',
 			[
-				'<?= $foreignTable1['tableColumn']?>' => $this->string(36), 	
-				'<?= $foreignTable2['tableColumn']?>' => $this->string(36), 	
+				'<?= $foreignTable1['tableColumn']?>' => $this->string(36),
+				'<?= $foreignTable2['tableColumn']?>' => $this->string(36),
+				'deleted_by' => $this->tinyInteger(), 	
+				'deleted_at' => $this->datetime(), 	
 				'PRIMARY KEY(<?=$foreignTable1['tableColumn']?>,<?=$foreignTable2['tableColumn']?> )',
 			]
 		);

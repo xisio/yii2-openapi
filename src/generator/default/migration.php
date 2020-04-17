@@ -20,7 +20,9 @@ class <?= $className ?> extends \yii\db\Migration
 
         $this->createTable('<?= $tableName ?>', [
 <?php foreach ($attributes as $attribute): ?>
-            '<?= $attribute['dbName'] ?>' => '<?= $attribute['dbType'] ?>',
+            '<?= $attribute['dbName'] ?>' => $this-><?= $attribute['dbType'] ?> <?= (($attribute['required'] == false)? '->defaultValue(NULL)':'->notNull()'); ?>
+<?= (strlen($attribute['columncomment'])? '->comment(\''.$attribute['columncomment'].'\')':''); ?>
+ ,
 <?php endforeach; ?>
 
 		<?php if(isset($attributes['uuid'])): ?>
@@ -36,7 +38,7 @@ class <?= $className ?> extends \yii\db\Migration
 	   $local_table = $tableName;
 	   $foreign_table= '{{%' . Inflector::camel2id(StringHelper::basename(Inflector::pluralize($relation['class'])), '_') . '}}'	
 	?>
-	$this->addForeignKey('fk-<?=$key?>','<?=$tableName?>','<?=$local_column?>','<?=$foreign_table?>','<?=$foreign_column?>');
+	$this->addForeignKey('fk-<?=strtolower($className)?><?=$key?>','<?=$tableName?>','<?=$local_column?>','<?=$foreign_table?>','<?=$foreign_column?>');
 
 	<?php endif; ?>
 	
@@ -45,8 +47,11 @@ class <?= $className ?> extends \yii\db\Migration
 
 	
 
-	$this->execute("SET foreign_key_checks = 1;");
+      $this->execute("SET foreign_key_checks = 1;");
         // TODO generate foreign keys
+      <?php if(count($tablecomment) > 0 ) : ?> 
+        $this->addCommentOnTable('<?=$tableName?>', '<?=json_encode($tablecomment)?>');
+      <?php endif; ?>
     }
 
     public function down()

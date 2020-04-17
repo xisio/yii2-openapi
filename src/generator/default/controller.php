@@ -45,22 +45,78 @@ PHP
 ];
 $findModel = [];
 
-?>
 
+
+	$default='\common\access\DefaultAccessControl';
+	$classAccess = '\common\access\\'.ucfirst($modelClass).'AccessControl';
+	$hasAccess = false;
+?>
 
 namespace <?= $namespace ?>;
 use yii\data\ActiveDataProvider;
 use Yii;
+use yii\data\Pagination;
+use yii\filters\auth\HttpBearerAuth;
+
+<?php if(class_exists($classAccess)): ?>
+	use  <?=$classAccess?> as AccessControl;
+	<?php $hasAccess = true; ?> 
+<?php elseif (class_exists($default)) : ?>
+	use  <?=$default?> as AccessControl;
+	<?php $hasAccess = true; ?>
+<?php endif; ?>  
 
 class <?= $className ?> extends \yii\rest\Controller
 {
 	private $limit = 20;
 	private $modelClass ='<?=$modelNamespace?>\<?=ucfirst($modelClass)?>';
 	private $modelSearch ='<?=$modelNamespace?>\<?=ucfirst($modelClass)?>Search';
-	private $reservedParams = ['sort','q'];
+	private $reservedParams = ['sort'];
 	private $pageSize = 20;
 	private $offset = 0;
+            public $serializer = [
+                'class' => 'yii\rest\Serializer',
+                'collectionEnvelope' => 'items',
+            ];
 
+
+    public function behaviors()
+    {
+        return [
+            'corsFilter' => [
+                'class' => \yii\filters\Cors::className(),
+                  'cors' => [
+                // restrict access to
+                'Access-Control-Allow-Origin' => ['*'],
+                'Access-Control-Allow-Headers' => ['*'],
+                'Access-Control-Request-Method' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
+                // Allow only POST and PUT methods
+                'Access-Control-Request-Headers' => ['*'],
+                // Allow only headers 'X-Wsse'
+                'Access-Control-Allow-Credentials' => true,
+                // Allow OPTIONS caching
+                'Access-Control-Max-Age' => 86400,
+                // Allow the X-Pagination-Current-Page header to be exposed to the browser.
+                'Access-Control-Expose-Headers' => [],
+
+
+            ],
+          ],
+          /*
+          <?php if($hasAccess) : ?>
+            'access' => [
+		            'class' => AccessControl::className(),
+
+            ],
+          <?php endif; ?> 
+          */
+         'authenticator' => [
+					'class' => HttpBearerAuth::className(),
+					],
+
+
+        ];
+    }
 
     public function actions()
 	{
@@ -189,9 +245,9 @@ endforeach;
     public function indexDataProvider() {
         $params = \Yii::$app->request->queryParams;
 
-        $model = new $this->modelClass;
+        $model = new $this->modelSearch;
         /* sollte man lieber durch safeAttributes und scenario ersetzen.*/
-        $modelAttr = $model->attributes;
+        $modelAttr = array_flip($model->safeAttributes());
 
         /* hält die Filter für uns vor*/
         $search = [];
@@ -217,13 +273,28 @@ endforeach;
         $pagination = null;
         //$pagination = new \yii\data\Pagination(['pageSize' => $this->pageSize]);
 		$query = $searchModel->search($searchByAttr);
-		$dataprovider = new ActiveDataProvider(
-			[
-				'query' => $query
-			]
-		);
+    $activedataprovider =
+      [
+        'query' => $query,
+      ];
+    if(!isset($params['sort'])){
+      $activedataprovider = array_merge($activedataprovider,[
+
+          'sort' => [
+            'defaultOrder' => $model->defaultSorting,
+          ]
+        ]);
+    }
+    $dataprovider = new ActiveDataProvider(
+      $activedataprovider
+    );
+
+    $this->pageSize = $params['limit'];
+    $pagination = new Pagination(['pageSize' => $this->pageSize]);
+        $dataprovider->setPagination($pagination);
+
         //$dataprovider->setPagination($pagination);
-        $dataprovider->setPagination(false);
+        //$dataprovider->setPagination(false);
         if(isset($params['limit'])){
                 $query->limit($params['limit']);
         }

@@ -594,6 +594,12 @@ class ApiGenerator extends Generator
         return $c;
     }
 
+    protected function convertObjectToArray($obj){
+			$prop = $obj->getSerializableData();
+			return json_decode(json_encode($prop),true);
+
+    }
+
     protected function generateModels()
     {
         $models = [];
@@ -612,7 +618,11 @@ class ApiGenerator extends Generator
             if (in_array($schemaName, $this->excludeModels)) {
                 continue;
             }
-
+            $tablecomment =[] ;
+            $schemaArr = $this->convertObjectToArray($schema);
+            if(isset($schemaArr['x-sorting'])){
+              $tablecomment['sorting'] = $schemaArr['x-sorting'];
+            }
 			$model =[
                 'name' => $schemaName,
                 'tableName' => '{{%' . Inflector::camel2id(StringHelper::basename(Inflector::pluralize($schemaName)), '_') . '}}',
@@ -626,11 +636,12 @@ class ApiGenerator extends Generator
 				$this->models[$schemaName]->init($model); 
 			}
             foreach ($schema->properties as $name => $property) {
+		$columncomment = '';
                 if ($property instanceof Reference) {
                     $ref = $property->getJsonReference()->getJsonPointer()->getPointer();
                     $resolvedProperty = $property->resolve();
-                    $dbName = "{$name}_uuid";
-		    $name = "{$name}_uuid";
+                    $dbName = "{$name}";
+		    $name = "{$name}";
                     $dbType = 'string(36)'; // for a foreign key
                     if (strpos($ref, '/components/schemas/') === 0) {
                         // relation
@@ -652,18 +663,25 @@ class ApiGenerator extends Generator
                     $resolvedProperty = $property;
                     $type = $this->getSchemaType($property);
                     $dbName = $name;
-					$dbType = $this->getDbType($name, $property);
-					if($name == 'id' ) {
-						continue;
+		    $dbType = $this->getDbType($name, $property);
+		    if(isset($property->format) && $property->format == 'binary') {
+    		  	$prop = $this->convertObjectToArray($property);
+	    	  	$columncomment = json_encode($prop['x-restrictions']);
+		    }
+		    if(!preg_match('/string\([0-9]*\)/', $dbType)){
+		    	$dbType = $dbType.'()';	
+		    }
+		    if($name == 'id'  ) {
+		    	continue;
 
-					}
+		    }
                 }
                 // relation
                 if (is_array($type)) {
                     $relations[$name] = [
                         'class' => $type[1],
                         'method' => 'hasMany',
-                        'link' => [Inflector::camel2id($schemaName, '_') . '_uuid' => 'uuid'], // TODO pk may not be 'id'
+                        'link' => [Inflector::camel2id($schemaName, '_') => 'uuid'], // TODO pk may not be 'id'
 					];
 
 
@@ -675,7 +693,7 @@ class ApiGenerator extends Generator
 						$targetClass => [
 							'class' => $schemaName,
 							'method' => 'hasMany',
-							'link' => [Inflector::camel2id($targetClass, '_') . '_uuid' => 'uuid'], // TODO pk may not be 'id'
+							'link' => [Inflector::camel2id($targetClass, '_')  => 'uuid'], // TODO pk may not be 'id'
 						]
                     ];
 					$this->models[$schemaName]->addRelation($relation);
@@ -690,6 +708,7 @@ class ApiGenerator extends Generator
 							'name' => $schemaName,
 							'type' => $type,
 							'dbType' => $dbType,
+							'migrationType' => '$this->'.$dbType'
 							'dbName' => $dbName,
 							'required' => false,
 							'readOnly' => $resolvedProperty->readOnly ?? false,
@@ -708,8 +727,12 @@ class ApiGenerator extends Generator
 							'target' => strtolower($tableName2), 
 						];
 					}
+					
                     $type = $type[0];
-                    $dbName = "{$name}_uuid";
+                    $dbName = "{$name}";
+                    $dbType = 'string(36)'; // for a foreign key
+                    unset($relations[$name]);
+		   continue;
                 }
 
                 $attributes[$name] = [
@@ -717,6 +740,7 @@ class ApiGenerator extends Generator
                     'type' => $type,
                     'dbType' => $dbType,
                     'dbName' => $dbName,
+		                'columncomment' => $columncomment,
                     'required' => false,
                     'readOnly' => $resolvedProperty->readOnly ?? false,
                     'description' => $resolvedProperty->description,
@@ -735,6 +759,7 @@ class ApiGenerator extends Generator
             $models[$schemaName] = [
                 'name' => $schemaName,
                 'tableName' => '{{%' . Inflector::camel2id(StringHelper::basename(Inflector::pluralize($schemaName)), '_') . '}}',
+                'tablecomment' => $tablecomment,
                 'description' => $schema->description,
                 'attributes' => $attributes,
                 'relations' => $relations,
@@ -1059,6 +1084,7 @@ class ApiGenerator extends Generator
                     $className = "m{$m}_$modelName";
                 }
                 $tableName = $model['tableName'];
+                $tablecomment = $model['tablecomment'];
 
 
                 $files[] = new CodeFile(
@@ -1067,6 +1093,7 @@ class ApiGenerator extends Generator
                         'className' => $className,
                         'namespace' => $migrationNamespace,
                         'tableName' => $tableName,
+                        'tablecomment' => $tablecomment,
                         'attributes' => $model['attributes'],
                         'relations' => $model['relations'],
                         'description' => 'Table for ' . $modelName,
@@ -1074,7 +1101,7 @@ class ApiGenerator extends Generator
                 );
             }
 		}
-
+    /*
 		if(!empty($this->junctionTables)){
 			foreach($this->junctionTables as $tableName=>$referenceTables){
                 // migration files get invalidated directly after generating
@@ -1097,7 +1124,7 @@ class ApiGenerator extends Generator
 				);
 			}
 
-		}
+		}*/
         return $files;
     }
 
